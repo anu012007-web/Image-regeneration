@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI Image Analysis & Regeneration Studio - Professional Image Processing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 AI Image Analysis & Regeneration Studio</h1>
+            <p>Professional Image Denoising | Smart Filter Application | Intelligent Image Analysis</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="imageUpload" accept="image/*" hidden>
+                <div class="upload-content">
+                    <div class="upload-icon">📸</div>
+                    <h3>Click or Drag & Drop to Upload Image</h3>
+                    <p>Supports PNG, JPG, JPEG, GIF, BMP, WEBP, TIFF (Max 50MB)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Results Panel -->
+        <div class="analysis-panel" id="analysisPanel" style="display: none;">
+            <div class="analysis-card">
+                <h3>🔍 AI Image Analysis Results</h3>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <span class="analysis-label">📷 Image Type:</span>
+                        <span class="analysis-value" id="imageTypeValue">-</span>
+                        <span class="confidence-badge" id="imageTypeConfidence">-</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">⚠️ Detected Noise:</span>
+                        <span class="analysis-value" id="noiseTypeValue">-</span>
+                        <span class="confidence-badge" id="noiseConfidence">-</span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="analysis-label">📊 Noise Level:</span>
+                        <span class="analysis-value" id="noiseLevelValue">-</span>
+                    </div>
+                </div>
+                <div class="analysis-details" id="analysisDetails"></div>
+            </div>
+        </div>
+
+        <!-- Image Display -->
+        <div class="image-container" id="imageContainer" style="display: none;">
+            <div class="image-panel">
+                <h3>📷 Original Image</h3>
+                <img id="originalImage" alt="Original Image">
+                <div style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;" id="imageInfo"></div>
+            </div>
+            <div class="image-panel">
+                <h3>✨ Processed Image</h3>
+                <img id="processedImage" alt="Processed Image">
+                <div class="download-btn" id="downloadBtn" style="display: none;">💾 Download Result</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls" id="controls" style="display: none;">
+            <!-- Smart Denoise Section -->
+            <div class="control-group highlight">
+                <h3>🎯 Smart AI Denoising (Recommended)</h3>
+                <p class="info-text" id="smartDenoiseInfo">AI will automatically detect noise type and apply optimal denoising</p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="smartDenoise('weak')">🔹 Weak Denoise</button>
+                    <button class="btn btn-primary" onclick="smartDenoise('medium')">🔸 Medium Denoise</button>
+                    <button class="btn btn-primary" onclick="smartDenoise('strong')">🔺 Strong Denoise</button>
+                </div>
+            </div>
+
+            <!-- Manual Denoise Section -->
+            <div class="control-group">
+                <h3>🔧 Manual Noise Reduction</h3>
+                <div class="button-group">
+                    <button class="btn btn-info" onclick="manualDenoise('gaussian')">Gaussian Blur</button>
+                    <button class="btn btn-info" onclick="manualDenoise('median')">Median Filter</button>
+                    <button class="btn btn-info" onclick="manualDenoise('bilateral')">Bilateral Filter</button>
+                    <button class="btn btn-info" onclick="manualDenoise('nl_means')">Non-Local Means</button>
+                    <button class="btn btn-info" onclick="manualDenoise('wavelet')">Wavelet Denoise</button>
+                </div>
+            </div>
+
+            <!-- Artistic Filters Section -->
+            <div class="control-group">
+                <h3>🎨 Artistic Filters</h3>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="applyFilter('sharpen')">Sharpen</button>
+                    <button class="btn btn-success" onclick="applyFilter('edge_detection')">Edge Detection</button>
+                    <button class="btn btn-success" onclick="applyFilter('cartoon')">Cartoon Effect</button>
+                    <button class="btn btn-success" onclick="applyFilter('sketch')">Sketch Effect</button>
+                    <button class="btn btn-success" onclick="applyFilter('emboss')">Emboss</button>
+                    <button class="btn btn-success" onclick="applyFilter('oil_paint')">Oil Paint</button>
+                    <button class="btn btn-success" onclick="applyFilter('watercolor')">Watercolor</button>
+                    <button class="btn btn-success" onclick="applyFilter('blur')">Blur</button>
+                </div>
+            </div>
+
+            <!-- Image Regeneration Section -->
+            <div class="control-group">
+                <h3>🔄 Image Regeneration</h3>
+                <div class="button-group">
+                    <button class="btn btn-info" onclick="regenerateImage('auto')">Auto Regenerate</button>
+                    <button class="btn btn-info" onclick="regenerateImage('median')">Median Regenerate</button>
+                    <button class="btn btn-info" onclick="regenerateImage('bilateral')">Bilateral Regenerate</button>
+                    <button class="btn btn-info" onclick="regenerateImage('wavelet')">Wavelet Regenerate</button>
+                </div>
+            </div>
+
+            <!-- Test Noise Addition Section -->
+            <div class="control-group">
+                <h3>🧪 Add Test Noise (for experimentation)</h3>
+                <div class="button-group">
+                    <button class="btn btn-warning" onclick="addTestNoise('gaussian', 25)">Gaussian Noise</button>
+                    <button class="btn btn-warning" onclick="addTestNoise('salt_pepper', 5)">Salt & Pepper</button>
+                    <button class="btn btn-warning" onclick="addTestNoise('poisson', 0)">Poisson Noise</button>
+                    <button class="btn btn-warning" onclick="addTestNoise('speckle', 25)">Speckle Noise</button>
+                    <button class="btn btn-warning" onclick="addTestNoise('periodic', 30)">Periodic Noise</button>
+                </div>
+            </div>
+
+            <!-- Utility Buttons -->
+            <div class="control-group">
+                <div class="button-group">
+                    <button class="btn btn-danger" onclick="resetImage()">🔄 Reset to Original</button>
+                    <button class="btn btn-secondary" onclick="reanalyzeImage()">🔍 Re-analyze Image</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing your image... Please wait ⏳</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSessionId = null;
+        let originalImageData = null;
+        let currentProcessedData = null;
+        let currentAnalysis = null;
+
+        // DOM elements
+        const uploadArea = document.getElementById('uploadArea');
+        const imageUpload = document.getElementById('imageUpload');
+        const imageContainer = document.getElementById('imageContainer');
+        const analysisPanel = document.getElementById('analysisPanel');
+        const controls = document.getElementById('controls');
+        const originalImage = document.getElementById('originalImage');
+        const processedImage = document.getElementById('processedImage');
+        const loading = document.getElementById('loading');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Event listeners for upload
+        uploadArea.addEventListener('click', () => imageUpload.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) handleImageUpload(file);
+        });
+
+        imageUpload.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleImageUpload(e.target.files[0]);
+        });
+
+        // Handle image upload
+        async function handleImageUpload(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                currentSessionId = data.session_id;
+                originalImageData = data.original_image;
+                originalImage.src = data.original_image;
+                processedImage.src = data.original_image;
+                currentProcessedData = data.original_image;
+                currentAnalysis = data.analysis;
+                
+                // Display image info
+                if (data.image_info) {
+                    document.getElementById('imageInfo').innerHTML = 
+                        `📐 ${data.image_info.width}×${data.image_info.height} | 💾 ${data.image_info.size_mb} MB`;
+                }
+                
+                // Display analysis results
+                displayAnalysis(data.analysis);
+                
+                imageContainer.style.display = 'flex';
+                analysisPanel.style.display = 'block';
+                controls.style.display = 'block';
+                downloadBtn.style.display = 'block';
+                
+                showNotification('Image uploaded successfully!', 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error uploading image: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Display analysis results
+        function displayAnalysis(analysis) {
+            if (!analysis) return;
+            
+            // Display image type
+            document.getElementById('imageTypeValue').textContent = analysis.image_type.type;
+            document.getElementById('imageTypeConfidence').textContent = `${analysis.image_type.confidence}% confidence`;
+            
+            // Set confidence badge color
+            const typeConfidence = document.getElementById('imageTypeConfidence');
+            if (analysis.image_type.confidence > 70) {
+                typeConfidence.style.backgroundColor = '#48bb78';
+            } else if (analysis.image_type.confidence > 40) {
+                typeConfidence.style.backgroundColor = '#ed8936';
+            } else {
+                typeConfidence.style.backgroundColor = '#f56565';
+            }
+            
+            // Display noise type
+            document.getElementById('noiseTypeValue').textContent = analysis.noise.type;
+            document.getElementById('noiseConfidence').textContent = `${analysis.noise.confidence}% confidence`;
+            document.getElementById('noiseLevelValue').textContent = `${analysis.noise.noise_level.level} (${analysis.noise.noise_level.percentage}%)`;
+            
+            const noiseConfidence = document.getElementById('noiseConfidence');
+            if (analysis.noise.confidence > 70) {
+                noiseConfidence.style.backgroundColor = '#48bb78';
+            } else if (analysis.noise.confidence > 40) {
+                noiseConfidence.style.backgroundColor = '#ed8936';
+            } else {
+                noiseConfidence.style.backgroundColor = '#f56565';
+            }
+            
+            // Display detailed analysis
+            const detailsHtml = `
+                <div class="analysis-detail-section">
+                    <h4>📸 Image Type Details:</h4>
+                    <ul>
+                        <li>🔍 Has straight lines: ${analysis.image_type.details.has_straight_lines ? 'Yes' : 'No'}</li>
+                        <li>📏 Line count: ${analysis.image_type.details.line_count}</li>
+                        <li>🎨 Multiple regions: ${analysis.image_type.details.has_multiple_regions ? 'Yes' : 'No'}</li>
+                        <li>🖼️ Uniform border: ${analysis.image_type.details.has_uniform_border ? 'Yes' : 'No'}</li>
+                        <li>📊 Texture variance: ${analysis.image_type.details.texture_variance}</li>
+                    </ul>
+                    ${analysis.image_type.recommendations.length > 0 ? 
+                        `<h4>💡 Recommendations:</h4>
+                        <ul>${analysis.image_type.recommendations.map(rec => `<li>${rec}</li>`).join('')}</ul>` : ''}
+                </div>
+                <div class="analysis-detail-section">
+                    <h4>⚠️ Noise Analysis Details:</h4>
+                    <ul>
+                        <li>📊 Variance: ${analysis.noise.statistics.variance}</li>
+                        <li>📈 Standard Deviation: ${analysis.noise.statistics.std_dev}</li>
+                        <li>🎯 Mean value: ${analysis.noise.statistics.mean}</li>
+                        <li>📐 Skewness: ${analysis.noise.statistics.skewness}</li>
+                        <li>🔀 Kurtosis: ${analysis.noise.statistics.kurtosis}</li>
+                    </ul>
+                    <h4>🎲 Noise Probability Scores:</h4>
+                    <ul>
+                        ${Object.entries(analysis.noise.scores).map(([key, value]) => 
+                            `<li>${key}: ${value}%</li>`
+                        ).join('')}
+                    </ul>
+                    ${analysis.noise.recommendations.length > 0 ? 
+                        `<h4>💡 Recommendations:</h4>
+                        <ul>${analysis.noise.recommendations.map(rec => `<li>${rec}</li>`).join('')}</ul>` : ''}
+                </div>
+            `;
+            
+            document.getElementById('analysisDetails').innerHTML = detailsHtml;
+            
+            // Update smart denoise info text
+            const smartInfo = document.getElementById('smartDenoiseInfo');
+            smartInfo.innerHTML = `🎯 AI Analysis Complete! Detected <strong>${analysis.noise.type}</strong> noise with ${analysis.noise.confidence}% confidence. Noise level: <strong>${analysis.noise.noise_level.level}</strong>. Smart denoise will use optimized algorithm for this noise type.`;
+        }
+
+        // Smart denoise function
+        async function smartDenoise(strength) {
+            if (!currentSessionId || !currentAnalysis) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/denoise', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        strength: strength,
+                        noise_type: 'auto'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = data.processed_image;
+                currentProcessedData = data.processed_image;
+                
+                // Show improvement notification
+                if (data.improvement_percentage) {
+                    showNotification(`✅ Denoise complete! Noise reduced by ${data.improvement_percentage}% using ${data.denoise_method} method`, 'success');
+                } else {
+                    showNotification(`✅ Denoise complete using ${data.denoise_method} method`, 'success');
+                }
+                
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error during denoising: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Manual denoise function
+        async function manualDenoise(method) {
+            if (!currentSessionId) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/denoise', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        strength: 'medium',
+                        noise_type: method
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = data.processed_image;
+                currentProcessedData = data.processed_image;
+                showNotification(`✅ Applied ${method} denoising`, 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Apply filter function
+        async function applyFilter(filterType) {
+            if (!currentSessionId) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        filter_type: filterType
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = data.processed_image;
+                currentProcessedData = data.processed_image;
+                showNotification(`✅ Applied ${filterType} filter`, 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Regenerate image function
+        async function regenerateImage(method) {
+            if (!currentSessionId) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/regenerate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        method: method
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = data.processed_image;
+                currentProcessedData = data.processed_image;
+                showNotification(`✅ Image regenerated using ${method} method`, 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Add test noise function
+        async function addTestNoise(noiseType, intensity) {
+            if (!currentSessionId) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/add-noise', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        noise_type: noiseType,
+                        intensity: intensity
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = data.processed_image;
+                currentProcessedData = data.processed_image;
+                showNotification(`🧪 Added ${noiseType} noise with intensity ${intensity}`, 'info');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Reset image function
+        async function resetImage() {
+            if (!currentSessionId) {
+                showNotification('No image to reset', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                processedImage.src = originalImageData;
+                currentProcessedData = originalImageData;
+                showNotification('Reset to original image', 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Re-analyze image function
+        async function reanalyzeImage() {
+            if (!currentSessionId) {
+                showNotification('Please upload an image first', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                currentAnalysis = {
+                    image_type: data.image_type,
+                    noise: data.noise
+                };
+                
+                displayAnalysis(currentAnalysis);
+                showNotification('Analysis complete!', 'success');
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+
+        // Download processed image
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentSessionId) {
+                showNotification('No image to download', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'processed_image.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showNotification('Download started!', 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Download failed', 'error');
+                }
+                
+                hideLoading();
+                
+            } catch (error) {
+                showNotification('Download error: ' + error.message, 'error');
+                hideLoading();
+            }
+        });
+
+        // Helper functions
+        function showLoading() {
+            loading.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loading.style.display = 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.backgroundColor = 
+                type === 'success' ? '#48bb78' : 
+                type === 'error' ? '#f56565' : 
+                type === 'warning' ? '#ed8936' : '#4299e1';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                resetImage();
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                downloadBtn.click();
+            }
+        });
+
+        // Welcome message
+        console.log('%c🎨 AI Image Analysis Studio Ready!', 'color: #667eea; font-size: 16px; font-weight: bold;');
+        console.log('%cUpload an image to get started with AI-powered analysis and denoising', 'color: #48bb78; font-size: 12px;');
+    </script>
+</body>
+</html>
